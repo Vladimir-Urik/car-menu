@@ -1,9 +1,12 @@
 import {SettingsPage} from "../SettingsSidebar.tsx";
 import {faBluetoothB} from "@fortawesome/free-brands-svg-icons";
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
-import React, {useEffect, useState} from "react";
+import {useEffect, useState} from "react";
 import {invoke} from "@tauri-apps/api/tauri";
 import {faCircleNotch} from "@fortawesome/free-solid-svg-icons";
+import {LineHeader} from "./Components/LineHeader.tsx";
+import {LineItem} from "./Components/LineItem.tsx";
+import {Toggle} from "./Components/Toggle.tsx";
 
 interface BluetoothInfo {
     name: string;
@@ -18,22 +21,6 @@ interface DeviceInfo {
     trusted: boolean;
     connected: boolean;
 }
-
-export const LineItem = ({label, value, disabled = false, onClick = () => {}}: {
-    label: React.ReactNode,
-    value: React.ReactNode,
-    disabled?: boolean,
-    onClick?: () => void
-}) => (
-    <div onClick={onClick} className={"px-4 w-full py-2 cursor-pointer bg-white rounded-lg text-sm flex items-center justify-between "+ (disabled ? "opacity-50 cursor-not-allowed pointer-events-none" : "")}>
-        <div>
-            {label}
-        </div>
-        <div>
-            {value}
-        </div>
-    </div>
-);
 
 const BluetoothSettingsPage = () => {
     const [bluetoothInfo, setBluetoothInfo] = useState<BluetoothInfo | undefined>();
@@ -109,20 +96,12 @@ const BluetoothSettingsPage = () => {
 
     return (
         <div>
-            <p className={"text-sm mb-2"}>
+            <LineHeader>
                 This device:
-            </p>
+            </LineHeader>
             <div className={"flex flex-col gap-1"}>
                 <LineItem label={<>Power</>} value={(
-                    <label className="relative inline-flex items-center cursor-pointer">
-                        <input type="checkbox" value="" className="sr-only peer"
-                               checked={bluetoothInfo?.enabled || false} onChange={() => {
-                            togglePower()
-                        }}/>
-                        <div
-                            className="group text-xs text-black peer ring-0 bg-rose-400 rounded-full outline-none duration-300 after:duration-300 w-12 h-6 peer-checked:bg-emerald-500  peer-focus:outline-none  after:content-[''] after:rounded-full after:absolute after:bg-gray-50 after:outline-none after:h-4 after:w-4 after:top-1 after:left-1 after:flex after:justify-center after:items-center peer-checked:after:translate-x-6 peer-hover:after:scale-95">
-                        </div>
-                    </label>
+                    <Toggle value={bluetoothInfo?.enabled || false} onChange={() => togglePower()}/>
                 )}/>
                 <LineItem disabled={!bluetoothInfo?.enabled} label={(
                     <>
@@ -131,23 +110,15 @@ const BluetoothSettingsPage = () => {
                     </>
                 )} value={<>{bluetoothInfo ? bluetoothInfo.address : <FontAwesomeIcon className={"animate-spin text-sm"} icon={faCircleNotch}/>}</>}/>
                 <LineItem disabled={!bluetoothInfo?.enabled} label={<>Visible to other devices</>} value={(
-                    <label className="relative inline-flex items-center cursor-pointer">
-                        <input type="checkbox" value="" className="sr-only peer"
-                               checked={bluetoothInfo?.visible || false} onChange={() => {
-                            toogleVisibility();
-                        }}/>
-                        <div
-                            className="group text-xs text-black peer ring-0 bg-rose-400 rounded-full outline-none duration-300 after:duration-300 w-12 h-6 peer-checked:bg-emerald-500  peer-focus:outline-none  after:content-[''] after:rounded-full after:absolute after:bg-gray-50 after:outline-none after:h-4 after:w-4 after:top-1 after:left-1 after:flex after:justify-center after:items-center peer-checked:after:translate-x-6 peer-hover:after:scale-95">
-                        </div>
-                    </label>
+                    <Toggle value={bluetoothInfo?.visible || false} onChange={() => toogleVisibility()}/>
                 )}/>
             </div>
 
             {devices != undefined && devices.length > 0 && (
                 <>
-                    <p className={"text-sm mb-2 mt-4"}>
+                    <LineHeader>
                         Trusted devices:
-                    </p>
+                    </LineHeader>
 
                     <div className={"flex flex-col gap-1"}>
                         {devices.filter((device) => device.trusted).map((device) => (
@@ -177,9 +148,9 @@ const BluetoothSettingsPage = () => {
             {bluetoothInfo?.enabled && (
                 <>
                 <div className={"flex items-center justify-between w-full"}>
-                    <p className={"text-sm mb-2 mt-4"}>
+                    <LineHeader>
                         Other devices:
-                    </p>
+                    </LineHeader>
                     <FontAwesomeIcon className={"animate-spin text-sm"} icon={faCircleNotch}/>
                 </div>
 
@@ -194,7 +165,7 @@ const BluetoothSettingsPage = () => {
             );
             }
 
-            export const bluetoothSettingsPageInfo: SettingsPage = {
+export const bluetoothSettingsPageInfo: SettingsPage = {
             link: "bluetooth",
             icon: faBluetoothB,
             title: "Bluetooth",

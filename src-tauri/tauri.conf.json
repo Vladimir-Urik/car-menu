@@ -26,9 +26,7 @@
         "removeDir": true,
         "removeFile": true,
         "renameFile": true,
-        "exists": true,
-
-        "scope": ["$APPDATA/car/*"]
+        "exists": true
       }
     },
     "windows": [
@@ -38,7 +36,7 @@
         "height": 600,
         "resizable": true,
         "maximized": true,
-        "fullscreen": true
+        "fullscreen": false
       }
     ],
     "security": {

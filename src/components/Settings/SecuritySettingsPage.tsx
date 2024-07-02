@@ -4,18 +4,41 @@ import {useState} from "react";
 import {CodeVerifyModal} from "../CodeVerifyModal.tsx";
 import {settingsAtom} from "../../atoms/settings.ts";
 import {useRecoilState} from "recoil";
+import {LineHeader} from "./Components/LineHeader.tsx";
+import {LineItem} from "./Components/LineItem.tsx";
+import {Toggle} from "./Components/Toggle.tsx";
+import {securityAtom} from "../../atoms/security.ts";
+import {invoke} from "@tauri-apps/api/tauri";
 
 const SecuritySettingsPage = () => {
     const [logged, setLogged] = useState(false);
     const [_, setSettings] = useRecoilState(settingsAtom);
+    const [security, setSecurity] = useRecoilState(securityAtom);
 
     return (
         <>
             {logged && (
-                <div className={"flex flex-col gap-1"}>
-                    <p>Author: Vladimir-Urik</p>
-                    <p>Built with Tauri ♥️</p>
-                    <p>Version: 1.0.0</p>
+                <div>
+                    <LineHeader>
+                        Pin code:
+                    </LineHeader>
+                    <div className={"flex flex-col gap-1"}>
+                        <LineItem label={<>Enabled</>} value={(
+                            <Toggle value={security.pinEnabled || false} onChange={() => {
+                                invoke("security_change_pin_enabled", {
+                                    enabled: !security.pinEnabled
+                                }).then(() => {
+                                    setSecurity((sec) => {
+                                        return ({
+                                            ...sec,
+                                            pinEnabled: !sec.pinEnabled
+                                        })
+                                    })
+                                })
+                            }}/>
+                        )}/>
+                        <LineItem disabled={!security.pinEnabled} label={"Change pin code..."} />
+                    </div>
                 </div>
             )}
             {!logged && (

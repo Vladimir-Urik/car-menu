@@ -140,7 +140,6 @@ impl BluetoothSession {
 
         for cap in re.captures_iter(data) {
             let address = &cap[1];
-            let name = &cap[2];
 
             let device = devices.iter_mut().find(|d| d.address == address).unwrap();
             device.trusted = true;
@@ -157,7 +156,6 @@ impl BluetoothSession {
 
         for cap in re.captures_iter(data) {
             let address = &cap[1];
-            let name = &cap[2];
 
             let device = devices.iter_mut().find(|d| d.address == address);
             if device == None {

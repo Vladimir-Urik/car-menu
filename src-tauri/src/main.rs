@@ -5,12 +5,14 @@ mod schemas;
 mod bluetooth;
 mod security;
 mod wifi;
+mod general;
 
 use std::fs;
 use std::ops::Deref;
+use log::__private_api::enabled;
 use tauri::{Manager, Window};
 use crate::bluetooth::{BluetoothSession, DeviceInfo};
-use crate::schemas::{BluetoothInfo, SecurityConfig, WifiStatus};
+use crate::schemas::{BluetoothInfo, GeneralSettings, SecurityConfig, SecurityPublicSettings, Theme, WifiStatus};
 use tauri::State;
 use crate::wifi::WifiSession;
 
@@ -87,6 +89,44 @@ async fn bluetooth_disconnect(device: String, bluetooth: State<'_, BluetoothSess
     bluetooth.disconnect(&device).await
 }
 
+#[tauri::command]
+async fn security_change_pin(new_pin: String, security_config: State<'_, SecurityConfig>) -> Result<(), ()> {
+    let mut pin = security_config.pin.lock().unwrap();
+    *pin = new_pin;
+    security_config.save();
+    Ok(())
+}
+
+#[tauri::command]
+async fn security_change_pin_enabled(enabled: bool, security_config: State<'_, SecurityConfig>) -> Result<(), ()> {
+    let mut pin_enabled = security_config.pin_enabled.lock().unwrap();
+    *pin_enabled = enabled;
+    drop(pin_enabled);
+    security_config.save();
+    Ok(())
+}
+
+#[tauri::command]
+async fn security_public_settings(security_config: State<'_, SecurityConfig>) -> Result<SecurityPublicSettings, ()> {
+    Ok(SecurityPublicSettings {
+        pin_enabled: security_config.pin_enabled.lock().unwrap().deref().clone()
+    })
+}
+
+#[tauri::command]
+async fn theme_settings(settings: State<'_, GeneralSettings>) -> Result<Theme, ()> {
+    Ok(settings.theme.clone())
+}
+
+#[tauri::command]
+async fn theme_change_darkmode(state: bool, settings: State<'_, GeneralSettings>) -> Result<(), ()> {
+    let mut darkmode = settings.theme.darkmode.lock().unwrap();
+    *darkmode = state;
+    drop(darkmode);
+    settings.save();
+    Ok(())
+}
+
 fn rs2js<R: tauri::Runtime>(message: String, manager: &impl Manager<R>) {
     manager
         .emit_all("rs2js", message)
@@ -96,13 +136,19 @@ fn rs2js<R: tauri::Runtime>(message: String, manager: &impl Manager<R>) {
 fn main() {
     fs::create_dir_all("/etc/car").unwrap();
 
+    // This should be called as early in the execution of the app as possible
+    #[cfg(debug_assertions)] // only enable instrumentation in development builds
+    let devtools = devtools::init();
+    
     tauri::Builder::default()
         .setup(|app| {
             app.manage(BluetoothSession::new());
             app.manage(SecurityConfig::new());
             app.manage(WifiSession::new());
+            app.manage(GeneralSettings::new());
             Ok(())
         })
+        .plugin(devtools)
         .invoke_handler(tauri::generate_handler![
             fullscreen,
             bluetooth_info,
@@ -115,7 +161,12 @@ fn main() {
             bluetooth_devices,
             bluetooth_scan,
             bluetooth_connect,
-            bluetooth_disconnect
+            bluetooth_disconnect,
+            security_change_pin,
+            security_change_pin_enabled,
+            security_public_settings,
+            theme_settings,
+            theme_change_darkmode
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

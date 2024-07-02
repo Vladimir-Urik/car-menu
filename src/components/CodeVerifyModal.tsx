@@ -1,7 +1,9 @@
-import React, {useState} from "react";
+import React, {useEffect, useState} from "react";
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
 import {faArrowLeft, faCheck, faClose} from "@fortawesome/free-solid-svg-icons";
 import {invoke} from "@tauri-apps/api/tauri";
+import {useRecoilState} from "recoil";
+import {securityAtom} from "../atoms/security.ts";
 
 const Button = ({children, onClick, disabled = false}: { children: React.ReactNode, onClick: () => void, disabled?: boolean }) => (
     <button
@@ -40,6 +42,7 @@ interface CodeVerifyModalProps {
 export const CodeVerifyModal = ({onCodeVerified, canClose = false, onClose = () => {} }: CodeVerifyModalProps) => {
     const [code, setCode] = useState('');
     const [errorMessage, setErrorMessage] = useState('');
+    const [security, _] = useRecoilState(securityAtom);
 
     const CodeView = () => {
         const codeLength = code.length;
@@ -83,8 +86,18 @@ export const CodeVerifyModal = ({onCodeVerified, canClose = false, onClose = () 
         });
     }
 
+    useEffect(() => {
+        if (!security.pinEnabled) {
+            onCodeVerified();
+        }
+    }, []);
+
+    if(!security.pinEnabled) {
+        return <></>;
+    }
+
     return (
-        <div tabIndex={0} onKeyDown={(e) => {
+        <div tabIndex={0} className={"absolute top-0 left-0 w-full h-screen z-9"} onKeyDown={(e) => {
             if (e.key == "Escape" && canClose) {
                 onClose();
             }
@@ -104,7 +117,7 @@ export const CodeVerifyModal = ({onCodeVerified, canClose = false, onClose = () 
             <div className={"absolute top-0 left-0 w-full h-screen z-9 bg-black/40"}>
             </div>
             <div className={"absolute z-100 top-0 left-0 w-full h-screen flex items-center justify-center"}>
-                <div className={"p-4 relative bg-white rounded-lg w-[350px]"}>
+                <div className={"p-4 relative bg-white dark:bg-gray-800 rounded-lg w-[350px]"}>
                     {canClose && (
                         <button
                             onClick={() => {
@@ -114,7 +127,7 @@ export const CodeVerifyModal = ({onCodeVerified, canClose = false, onClose = () 
                             <FontAwesomeIcon icon={faClose}/>
                         </button>
                     )}
-                    <h1 className={"text-xl font-bold text-center"}>
+                    <h1 className={"text-xl font-bold text-center text-black dark:text-white"}>
                         Enter the code
                     </h1>
                     <div className={"w-full flex items-center mt-8 justify-center gap-8 h-[100px]"}>
