@@ -1,9 +1,11 @@
-# Tauri + React + Typescript
+# Tesla Like Car Menu
 
-This template should help get you started developing with Tauri, React and Typescript in Vite.
+## TechStack
+- Rust
+- TypeScript
+- React
+- Tauri
 
-## Recommended IDE Setup
+## Showcase
+![image](https://github.com/Vladimir-Urik/car-menu/assets/47532155/1ff5747a-d1b0-4c99-b40b-b711a00de304)
 
-- [VS Code](https://code.visualstudio.com/) + [Tauri](https://marketplace.visualstudio.com/items?itemName=tauri-apps.tauri-vscode) + [rust-analyzer](https://marketplace.visualstudio.com/items?itemName=rust-lang.rust-analyzer)
-# car-menu
-# car-menu
